@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Sounds Game</title>
+    <style>
+ 
+        :root {
+            --primary: #8a5ce6;
+            --secondary: #ff8ab4;
+            --background: #f9f0ff;
+            --text: #5a3c7c;
+            --error: #ff5252;
+            --success: #64dd17;
+            --accent: #ffca28;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: var(--background);
+            background-image: linear-gradient(to bottom, #f3e5ff, #ffd6e8);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+            width: 100%;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(138, 92, 230, 0.2);
+            padding: 30px;
+            border: 3px solid #e6d0ff;
+            background-image: linear-gradient(to bottom, #ffffff, #fdf6ff);
+        }
+
+        .active {
+            display: flex;
+        }
+
+        h1, h2 {
+            color: black;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(to right, var(--primary), #c191ff);
+            font-size: 2.2rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary), #0e0e0f);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(138, 92, 230, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 10.5%);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 15% 15%;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(138, 92, 230, 0.4);
+        }
+
+        .btn:active::after {
+            opacity: 1;
+            animation: ripple 0.6s linear;
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(0); opacity: 0.5; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, var(--secondary), #ffb0d0);
+        }
+
+        .animals-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .animal-card {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: white;
+            text-align: center;
+            position: relative;
+        }
+
+        .animal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(var(--primary-rgb), 0.05));
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .animal-card:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 10px 25px rgba(138, 92, 230, 0.3);
+        }
+
+        .animal-image {
+            height: 180px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-bottom: 3px solid var(--primary);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .animal-name {
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .score-container {
+            background: linear-gradient(45deg, var(--primary), #aa7aff);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(138, 92, 230, 0.3);
+        }
+
+        .sound-btn {
+            background: linear-gradient(45deg, var(--secondary), #ffb0d0);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(255, 138, 180, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+            border: none;
+        }
+
+        .sound-btn::after {
+            content: "🔊";
+            font-size: 24px;
+        }
+
+        .sound-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(255, 138, 180, 0.4);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 15px;
+            background-color: #f0e6ff;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--secondary), #ffb0d0);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .feedback {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            min-height: 50px;
+            font-weight: bold;
+        }
+
+        .correct {
+            color: var(--success);
+        }
+
+        .wrong {
+            color: var(--error);
+        }
+
+        .parent-container {
+            width: 100%;
+        }
+
+        .stats-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 30px rgba(138, 92, 230, 0.2);
+            border: 3px solid #e6d0ff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background-color: #f9f0ff;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(138, 92, 230, 0.15);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 5px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .celebration-content {
+            background: linear-gradient(to bottom, #ffffff, #fdf6ff);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 1001;
+            max-width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border: 3px solid var(--secondary);
+        }
+
+        .final-score {
+            font-size: 1.5rem;
+            margin: 20px 0;
+        }
+
+        .final-score span {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 2rem;
+        }
+
+        .star {
+            position: absolute;
+            background: linear-gradient(45deg, #FFD700, #FFC107);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            opacity: 1;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+
+        /* Butterfly Animation */
+        .butterfly {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23ff8ab4' d='M50 30c0 0-20-30-40-30 0 20 5 25 40 50-35 25-40 30-40 50 20 0 40-30 40-30s20 30 40 30c0-20-5-25-40-50 35-25 40-30 40-50-20 0-40 30-40 30z'/%3E%3Ccircle fill='%23e6d0ff' cx='50' cy='50' r='5'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 1;
+            transform-origin: center;
+            animation: fly-around 20s linear infinite, wing-flap 0.2s ease-in-out infinite alternate;
+        }
+
+        .butterfly:nth-child(even) {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%238a5ce6' d='M50 30c0 0-20-30-40-30 0 20 5 25 40 50-35 25-40 30-40 50 20 0 40-30 40-30s20 30 40 30c0-20-5-25-40-50 35-25 40-30 40-50-20 0-40 30-40 30z'/%3E%3Ccircle fill='%23ffca28' cx='50' cy='50' r='5'/%3E%3C/svg%3E");
+        }
+
+        @keyframes fly-around {
+            0% {
+                top: 100%;
+                left: -10%;
+            }
+            25% {
+                top: 20%;
+                left: 30%;
+            }
+            50% {
+                top: 10%;
+                left: 80%;
+            }
+            75% {
+                top: 70%;
+                left: 80%;
+            }
+            100% {
+                top: 100%;
+                left: -10%;
+            }
+        }
+
+        @keyframes wing-flap {
+            0% {
+                transform: scaleX(0.8);
+            }
+            100% {
+                transform: scaleX(1.2);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+
+        .bounce {
+            animation: bounce 0.5s;
+        }
+
+        @keyframes wiggle {
+            0% {transform: translateX(0);}
+            25% {transform: translateX(-5px);}
+            50% {transform: translateX(5px);}
+            75% {transform: translateX(-5px);}
+            100% {transform: translateX(0);}
+        }
+
+        .wiggle {
+            animation: wiggle 0.5s;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .screen {
+                padding: 20px;
+                min-height: auto;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .animals-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .animal-image {
+                height: 150px;
+            }
+            
+            .btn {
+                padding: 10px 25px;
+                font-size: 1rem;
+            }
+            
+            .game-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .butterfly {
+                width: 25px;
+                height: 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .screen {
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            .animal-image {
+                height: 130px;
+            }
+            
+            .sound-btn {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .sound-btn::after {
+                font-size: 20px;
+            }
+            
+            .feedback {
+                font-size: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+        <!-- Butterflies -->
+        <div class="butterfly" style="animation-delay: 0s;"></div>
+        <div class="butterfly" style="animation-delay: 2s;"></div>
+        <div class="butterfly" style="animation-delay: 4s;"></div>
+        <div class="butterfly" style="animation-delay: 6s;"></div>
+        <div class="butterfly" style="animation-delay: 8s;"></div>
+        <div class="butterfly" style="animation-delay: 10s;"></div>
+        <div class="butterfly" style="animation-delay: 12s;"></div>
+        <div class="butterfly" style="animation-delay: 14s;"></div>
+    <div class="container">
+        <!-- Start Screen -->
+        <div class="screen start-screen active">
+            <h1>Animal Sounds Game</h1>
+            <p>Listen to the sound and choose the correct animal!</p>
+            <button class="btn start-btn">Start Game</button>
+            <button class="btn btn-secondary btn-parent">Parent Section</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div class="screen game-screen">
+            <div class="game-header">
+                <div class="score-container">
+                    Score: <span id="score">0</span>
+                </div>
+                <button class="btn sound-btn"></button>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-fill"></div>
+            </div>
+
+            <div class="feedback"></div>
+
+            <div class="animals-grid">
+                <!-- Animals will be added here dynamically -->
+            </div>
+        </div>
+
+        <!-- Parent Screen -->
+        <div class="screen parent-screen">
+            <h1>Parent Section</h1>
+            
+            <div class="parent-container">
+                <div class="stats-card">
+                    <h2>Game Statistics</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="games-played">0</div>
+                            <div class="stat-label">Games Played</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="highest-score">0</div>
+                            <div class="stat-label">Highest Score</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="accuracy">0%</div>
+                            <div class="stat-label">Accuracy</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-card">
+                    <h2>Animal Performance</h2>
+                    <div id="animal-performance-chart">
+                        <!-- Chart will be added here dynamically -->
+                    </div>
+                </div>
+                
+                <button class="btn reset-stats-btn">Reset Statistics</button>
+                <button class="btn btn-secondary btn-back">Back to Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Celebration Screen -->
+    <div class="celebration">
+        <div class="celebration-content">
+            <h2>Game Over!</h2>
+            <div class="final-score">Your score: <span>0/10</span></div>
+            <button class="btn play-again-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game data with external URLs for images and sounds
+const animals = [
+    { 
+        id: 1, 
+        name: 'Dog', 
+        sound: 'https://assets.mixkit.co/active_storage/sfx/60/60-preview.mp3', 
+        image: 'https://i.pinimg.com/originals/29/5d/d5/295dd52263c8df5eb40ef59b1e92f0a6.gif' 
+    },
+    { 
+        id: 2, 
+        name: 'Cat', 
+        sound: 'https://assets.mixkit.co/active_storage/sfx/93/93-preview.mp3', 
+        image: 'https://cdn.shopify.com/s/files/1/0344/6469/files/cat-gif-loop-ice_grande.gif?v=1523984147' 
+    },
+    { 
+        id: 3, 
+        name: 'Cow', 
+        sound: 'https://assets.mixkit.co/active_storage/sfx/1751/1751-preview.mp3', 
+        image: 'https://cdn.dribbble.com/userupload/20728865/file/original-2afc6b59f2420771117e8a9425d8dccb.gif' 
+    },
+    { 
+        id: 4, 
+        name: 'Duck', 
+        sound: 'https://assets.mixkit.co/active_storage/sfx/1014/1014-preview.mp3', 
+        image: 'https://i.pinimg.com/originals/ac/9c/67/ac9c670975a297ca7ffe07b3ea68ed5a.gif' 
+    },
+    { 
+        id: 5, 
+        name: 'Sheep', 
+        sound: 'https://assets.mixkit.co/active_storage/sfx/1741/1741-preview.mp3', 
+        image: 'https://img1.picmix.com/output/stamp/normal/2/8/5/5/1545582_059ac.gif' 
+    },
+    { 
+        id: 6, 
+        name: 'Horse', 
+        sound: 'https://assets.mixkit.co/active_storage/sfx/85/85-preview.mp3', 
+        image: 'https://i.pinimg.com/originals/ae/f5/0a/aef50a29f12e06db36021a71a8d7b6cc.gif' 
+    },
+    { 
+        id: 7, 
+        name: 'Pig', 
+        sound: 'https://assets.mixkit.co/active_storage/sfx/3/3-preview.mp3', 
+        image: 'https://cdn.dribbble.com/userupload/20972829/file/original-98dac026ebb373bbc6411c377fea9559.gif' 
+    },
+    { 
+        id: 8, 
+        name: 'Lion', 
+        sound: 'https://assets.mixkit.co/active_storage/sfx/6/6-preview.mp3', 
+        image: 'https://giffiles.alphacoders.com/884/88403.gif' 
+    },
+    { 
+        id: 9, 
+        name: 'Frog', 
+        sound: 'https://assets.mixkit.co/active_storage/sfx/40/40-preview.mp3', 
+        image: 'https://media1.giphy.com/media/RrgU8dSHC7dJziwYKz/giphy.gif?cid=6c09b95285r2tr3zptkg6f9ya4jrc1kbfypvtkwfuda05wcb&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g' 
+    },
+    { 
+        id: 10, 
+        name: 'Elephant', 
+        sound: 'https://quicksounds.com/uploads/tracks/448588083_1486664419_1922590632.mp3', 
+        image: 'https://i.pinimg.com/originals/a7/59/7f/a7597f0db79302ae9506f1d557dfd318.gif' 
+    }
+];
+
+// UI elements
+const startScreen = document.querySelector('.start-screen');
+const gameScreen = document.querySelector('.game-screen');
+const parentScreen = document.querySelector('.parent-screen');
+const startBtn = document.querySelector('.start-btn');
+const parentBtn = document.querySelector('.btn-parent');
+const backBtn = document.querySelector('.btn-back');
+const soundBtn = document.querySelector('.sound-btn');
+const animalsGrid = document.querySelector('.animals-grid');
+const feedbackElement = document.querySelector('.feedback');
+const scoreDisplay = document.getElementById('score');
+const progressFill = document.querySelector('.progress-fill');
+const celebration = document.querySelector('.celebration');
+const playAgainBtn = document.querySelector('.play-again-btn');
+const finalScore = document.querySelector('.final-score span');
+const resetStatsBtn = document.querySelector('.reset-stats-btn');
+
+// Parent stats elements
+const gamesPlayedElement = document.getElementById('games-played');
+const highestScoreElement = document.getElementById('highest-score');
+const accuracyElement = document.getElementById('accuracy');
+
+// Game state
+let currentRound = 0;
+let score = 0;
+let totalQuestions = 10;
+let currentAnimal = null;
+let selectedAnimals = [];
+let gameStats = {
+    gamesPlayed: 0,
+    highestScore: 0,
+    totalCorrect: 0,
+    totalAttempts: 0,
+    animalStats: {}
+};
+
+// Audio element for playing sounds
+let audioElement = new Audio();
+
+// Initialize animal stats
+animals.forEach(animal => {
+    gameStats.animalStats[animal.id] = {
+        correct: 0,
+        attempts: 0
+    };
+});
+
+// Load game stats from local storage
+function loadGameStats() {
+    const savedStats = localStorage.getItem('animalGameStats');
+    if (savedStats) {
+        gameStats = JSON.parse(savedStats);
+        
+        // Make sure all animals exist in the stats (in case we added new ones)
+        animals.forEach(animal => {
+            if (!gameStats.animalStats[animal.id]) {
+                gameStats.animalStats[animal.id] = {
+                    correct: 0,
+                    attempts: 0
+                };
+            }
+        });
+        
+        updateParentStats();
+    }
+}
+
+// Save game stats to local storage
+function saveGameStats() {
+    localStorage.setItem('animalGameStats', JSON.stringify(gameStats));
+}
+
+// Update parent stats display
+function updateParentStats() {
+    gamesPlayedElement.textContent = gameStats.gamesPlayed;
+    highestScoreElement.textContent = gameStats.highestScore;
+    
+    const accuracy = gameStats.totalAttempts > 0 
+        ? Math.round((gameStats.totalCorrect / gameStats.totalAttempts) * 100) 
+        : 0;
+    
+    accuracyElement.textContent = `${accuracy}%`;
+    
+    // Update chart
+    const chart = document.getElementById('animal-performance-chart');
+    chart.innerHTML = '';
+    
+    // Create simple bar chart
+    const animalEntries = Object.entries(gameStats.animalStats);
+    animalEntries.forEach(([animalId, stats]) => {
+        const animal = animals.find(a => a.id === parseInt(animalId));
+        if (!animal) return;
+        
+        const accuracy = stats.attempts > 0 
+            ? Math.round((stats.correct / stats.attempts) * 100) 
+            : 0;
+        
+        const barContainer = document.createElement('div');
+        barContainer.style.display = 'flex';
+        barContainer.style.alignItems = 'center';
+        barContainer.style.margin = '5px 0';
+        
+        const nameLabel = document.createElement('div');
+        nameLabel.style.width = '80px';
+        nameLabel.textContent = animal.name;
+        
+        const barBackground = document.createElement('div');
+        barBackground.style.flex = '1';
+        barBackground.style.height = '20px';
+        barBackground.style.backgroundColor = '#e0e0e0';
+        barBackground.style.borderRadius = '5px';
+        barBackground.style.position = 'relative';
+        
+        const bar = document.createElement('div');
+        bar.style.width = `${accuracy}%`;
+        bar.style.height = '100%';
+        bar.style.backgroundColor = 'var(--secondary)';
+        bar.style.borderRadius = '5px';
+        
+        const percentLabel = document.createElement('div');
+        percentLabel.style.position = 'absolute';
+        percentLabel.style.right = '10px';
+        percentLabel.style.top = '0';
+        percentLabel.style.color = '#333';
+        percentLabel.style.fontSize = '12px';
+        percentLabel.textContent = `${accuracy}%`;
+        
+        barBackground.appendChild(bar);
+        barBackground.appendChild(percentLabel);
+        barContainer.appendChild(nameLabel);
+        barContainer.appendChild(barBackground);
+        
+        chart.appendChild(barContainer);
+    });
+}
+
+// Preload animal sounds for better performance
+function preloadSounds() {
+    animals.forEach(animal => {
+        const audio = new Audio();
+        audio.src = animal.sound;
+        audio.preload = 'auto';
+    });
+}
+
+// Play a specific animal sound
+function playAnimalSound(soundUrl) {
+    // Stop any currently playing sound
+    audioElement.pause();
+    audioElement.currentTime = 0;
+    
+    // Play the new sound
+    audioElement = new Audio(soundUrl);
+    audioElement.play().catch(error => {
+        console.error('Error playing sound:', error);
+        // Fallback alert if sound playback fails
+        feedbackElement.textContent = "Click on the animal that makes this sound";
+    });
+}
+
+// Play success sound
+function playSuccessSound() {
+    audioElement.pause();
+    audioElement = new Audio('https://assets.mixkit.co/active_storage/sfx/1689/1689-preview.mp3');
+    audioElement.play().catch(e => console.error('Error playing success sound:', e));
+}
+
+// Play error sound
+function playErrorSound() {
+    audioElement.pause();
+    audioElement = new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3');
+    audioElement.play().catch(e => console.error('Error playing error sound:', e));
+}
+
+// Play celebration sound
+function playCelebrationSound() {
+    audioElement.pause();
+    audioElement = new Audio('https://assets.mixkit.co/active_storage/sfx/2012/2012-preview.mp3');
+    audioElement.play().catch(e => console.error('Error playing celebration sound:', e));
+}
+
+// Create celebration effect
+function showCelebration() {
+    celebration.style.display = 'flex';
+    
+    // Create and animate stars
+    for (let i = 0; i < 20; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        
+        // Random position
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
+        star.style.left = `${left}%`;
+        star.style.top = `${top}%`;
+        
+        // Random size
+        const size = Math.random() * 20 + 10;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        
+        celebration.appendChild(star);
+        
+        // Animate
+        setTimeout(() => {
+            star.style.transform = `translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) scale(${Math.random() + 0.5})`;
+            star.style.opacity = '0';
+            star.style.transition = 'all 1s ease-out';
+        }, i * 100);
+        
+        // Remove after animation
+        setTimeout(() => {
+            star.remove();
+        }, i * 100 + 1000);
+    }
+    
+    // Play celebration sound
+    playCelebrationSound();
+}
+
+// Get a random set of animals for the options
+function getRandomAnimals(count, excludeId = null) {
+    const availableAnimals = excludeId 
+        ? animals.filter(animal => animal.id !== excludeId)
+        : [...animals];
+        
+    const shuffled = availableAnimals.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+}
+
+// Start a new round
+function startNewRound() {
+    // Clear previous feedback
+    feedbackElement.textContent = '';
+    feedbackElement.classList.remove('correct', 'wrong');
+    
+    // Select a random animal for the sound
+    currentAnimal = animals[Math.floor(Math.random() * animals.length)];
+    
+    // Get random animals for options (including the correct one)
+    const otherAnimals = getRandomAnimals(3, currentAnimal.id);
+    selectedAnimals = [...otherAnimals, currentAnimal].sort(() => 0.5 - Math.random());
+    
+    // Update the grid with animal options
+    animalsGrid.innerHTML = '';
+    selectedAnimals.forEach(animal => {
+        const card = document.createElement('div');
+        card.classList.add('animal-card');
+        card.dataset.id = animal.id;
+        
+        const image = document.createElement('div');
+        image.classList.add('animal-image');
+        image.style.backgroundImage = `url('${animal.image}')`;
+        
+        const name = document.createElement('div');
+        name.classList.add('animal-name');
+        name.textContent = animal.name;
+        
+        card.appendChild(image);
+        card.appendChild(name);
+        animalsGrid.appendChild(card);
+        
+        // Add click event
+        card.addEventListener('click', () => handleAnimalSelection(animal));
+    });
+    
+    // Update progress bar
+    progressFill.style.width = `${(currentRound / totalQuestions) * 100}%`;
+    
+    // Play the sound after a short delay
+    setTimeout(() => {
+        playAnimalSound(currentAnimal.sound);
+        feedbackElement.textContent = "Click on the animal that makes this sound";
+    }, 500);
+}
+
+// Handle animal selection
+function handleAnimalSelection(selectedAnimal) {
+    // Prevent multiple selections in same round
+    if (feedbackElement.textContent && feedbackElement.textContent !== "Click on the animal that makes this sound") return;
+    
+    // Update animal stats
+    gameStats.animalStats[currentAnimal.id].attempts++;
+    gameStats.totalAttempts++;
+    
+    // Check if selection is correct
+    const isCorrect = selectedAnimal.id === currentAnimal.id;
+    
+    if (isCorrect) {
+        // Correct answer
+        feedbackElement.textContent = 'Correct! Well done!';
+        feedbackElement.classList.add('correct');
+        score++;
+        scoreDisplay.textContent = score;
+        
+        // Update stats
+        gameStats.animalStats[currentAnimal.id].correct++;
+        gameStats.totalCorrect++;
+        
+        // Play success sound
+        playSuccessSound();
+        
+        // Add bounce animation to correct animal card
+        const correctCard = document.querySelector(`.animal-card[data-id="${currentAnimal.id}"]`);
+        correctCard.classList.add('bounce');
+        
+        // Remove animation class after it completes
+        setTimeout(() => {
+            correctCard.classList.remove('bounce');
+        }, 500);
+    } else {
+        // Wrong answer
+        feedbackElement.textContent = `Oops! That's a ${selectedAnimal.name}. The sound was from a ${currentAnimal.name}.`;
+        feedbackElement.classList.add('wrong');
+        
+        // Play error sound
+        playErrorSound();
+        
+        // Add wiggle animation to selected animal card
+        const selectedCard = document.querySelector(`.animal-card[data-id="${selectedAnimal.id}"]`);
+        selectedCard.classList.add('wiggle');
+        
+        // Remove animation class after it completes
+        setTimeout(() => {
+            selectedCard.classList.remove('wiggle');
+        }, 500);
+    }
+    
+    // Save game stats
+    saveGameStats();
+    
+    // Proceed to next round after delay
+    currentRound++;
+    if (currentRound < totalQuestions) {
+        setTimeout(startNewRound, 2000);
+    } else {
+        // Game over
+        setTimeout(() => {
+            endGame();
+        }, 2000);
+    }
+}
+
+// End the game
+function endGame() {
+    // Update game stats
+    gameStats.gamesPlayed++;
+    if (score > gameStats.highestScore) {
+        gameStats.highestScore = score;
+    }
+    
+    // Update parent stats
+    updateParentStats();
+    
+    // Save game stats
+    saveGameStats();
+    
+    // Show final score
+    finalScore.textContent = `${score}/${totalQuestions}`;
+    
+    // Show celebration
+    showCelebration();
+}
+
+// Start a new game
+function startNewGame() {
+    currentRound = 0;
+    score = 0;
+    scoreDisplay.textContent = '0';
+    progressFill.style.width = '0%';
+    
+    // Hide celebration
+    celebration.style.display = 'none';
+    
+    // Start first round
+    startNewRound();
+    
+    // Show game screen
+    startScreen.classList.remove('active');
+    gameScreen.classList.add('active');
+    parentScreen.classList.remove('active');
+}
+
+// Event listeners
+startBtn.addEventListener('click', () => {
+    // Start preloading sounds
+    preloadSounds();
+    startNewGame();
+});
+
+parentBtn.addEventListener('click', () => {
+    startScreen.classList.remove('active');
+    gameScreen.classList.remove('active');
+    parentScreen.classList.add('active');
+    
+    // Update parent stats
+    updateParentStats();
+});
+
+backBtn.addEventListener('click', () => {
+    parentScreen.classList.remove('active');
+    startScreen.classList.add('active');
+});
+
+soundBtn.addEventListener('click', () => {
+    if (currentAnimal) {
+        playAnimalSound(currentAnimal.sound);
+    }
+});
+
+playAgainBtn.addEventListener('click', () => {
+    startNewGame();
+});
+
+resetStatsBtn.addEventListener('click', () => {
+    // Reset game stats
+    gameStats = {
+        gamesPlayed: 0,
+        highestScore: 0,
+        totalCorrect: 0,
+        totalAttempts: 0,
+        animalStats: {}
+    };
+    
+    // Initialize animal stats
+    animals.forEach(animal => {
+        gameStats.animalStats[animal.id] = {
+            correct: 0,
+            attempts: 0
+        };
+    });
+    
+    // Save and update
+    saveGameStats();
+    updateParentStats();
+});
+
+// Initialize game
+document.addEventListener('DOMContentLoaded', () => {
+    loadGameStats();
+});
+    </script>
+</body>
+</html>
